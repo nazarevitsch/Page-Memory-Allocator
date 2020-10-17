@@ -1,0 +1,3 @@
+"C:\Program Files\JetBrains\CLion 2020.2.1\bin\cmake\win\bin\cmake.exe" -E rm -f CMakeFiles\Lab2.dir/objects.a
+C:\PROGRA~1\HASKEL~1\86A504~1.3\mingw\bin\ar.exe cr CMakeFiles\Lab2.dir/objects.a @CMakeFiles\Lab2.dir\objects1.rsp
+C:\PROGRA~1\HASKEL~1\86A504~1.3\mingw\bin\G__~1.EXE -g   -Wl,--whole-archive CMakeFiles\Lab2.dir/objects.a -Wl,--no-whole-archive  -o Lab2.exe -Wl,--out-implib,libLab2.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Lab2.dir\linklibs.rsp
