@@ -48,7 +48,8 @@ void Allocator::init() {
 
 void* Allocator::mem_alloc(uint16_t size) {
     for (int i = 0; i < PAGES_SIZE; i++) {
-        if (this->pages[i].state == State::SAME_BLOCKS && this->pages[i].size_of_class == size) {
+        if (this->pages[i].state == State::SAME_BLOCKS && this->pages[i].size_of_class == align(size)) {
+            cout << "Y" << endl;
             for (int j = 0; j < pages[i].size_of_block / pages[i].size_of_class; j++) {
                 if (pages[i].list_of_using[j] == 0) {
                     pages[i].list_of_using[j] = 1;
@@ -58,7 +59,14 @@ void* Allocator::mem_alloc(uint16_t size) {
         }
     }
     for (int i = 0; i < PAGES_SIZE; i++) {
-
+        if (this->pages[i].state == State::FREE) {
+            this->pages[i].size_of_class = align(size);
+            for (int j = 0; j < pages[i].size_of_block / pages[i].size_of_class; j++) {
+                pages[i].list_of_using[0] = 1;
+                pages[i].state = State::SAME_BLOCKS;
+                return pages[i].start_of_page + (pages[i].size_of_class * j);
+            }
+        }
     }
 }
 
@@ -68,6 +76,9 @@ void Allocator::mem_dump() {
         cout << "Page N" << (i + 1) << ", Size: " << pages[i].size_of_block << endl;
         cout << "Start of page: " << (uint8_t**)pages[i].start_of_page << endl;
         cout << "State of page: " << (pages[i].state == State::FREE ? "FREE" : pages[i].state == State::SAME_BLOCKS ? "SAME BLOCKS" : "MULTY") << endl;
+        if (pages[i].state == State::SAME_BLOCKS) {
+            cout << "Size of Class: " << pages[i].size_of_class << endl;
+        }
         for (int j = 0; j < pages[i].size_of_block/pages[i].size_of_class; j++) {
             cout << "Block N" << (j + 1) << ", using: " << (int)pages[i].list_of_using[j] << endl;
         }
@@ -86,6 +97,11 @@ uint16_t Allocator::align(uint16_t size) {
 int main() {
     Allocator allocator;
     allocator.init();
+    allocator.mem_alloc(63);
+    allocator.mem_alloc(63);
+    allocator.mem_alloc(35);
+    allocator.mem_alloc(60);
+    allocator.mem_alloc(32);
     allocator.mem_dump();
     return 0;
 }
