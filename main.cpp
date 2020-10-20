@@ -27,7 +27,7 @@ public:
     void init();
     void mem_dump();
     void mem_free(void* adr);
-    void mem_realloc(void* adr, uint16_t size);
+    void* mem_realloc(void* adr, uint16_t size);
     void* mem_alloc(uint16_t size);
     uint16_t align(uint16_t size);
     int find_free_pages_for_multi_block(uint16_t size);
@@ -81,6 +81,39 @@ void* Allocator::mem_alloc(uint16_t size) {
         }
     }
     return NULL;
+}
+
+void* Allocator::mem_realloc(void *adr, uint16_t size) {
+    if (adr == NULL) {
+        return mem_alloc(size);
+    } else {
+        for (int i = 0; i < PAGES_SIZE; i++) {
+            if (pages[i].start_of_page <= adr && (pages[i].start_of_page + SINGLE_PAGE_SIZE - 1) > adr) {
+                if (align(size) == pages[i].size_of_class) { return adr; }
+                else {
+                    if (align(size) < pages[i].size_of_class) {
+                        mem_free(adr);
+                        return mem_alloc(size);
+                    } else {
+                        uint16_t block_size = pages[i].size_of_class;
+                        for (int j = 0; j < SINGLE_PAGE_SIZE / pages[i].size_of_class; j++) {
+                            if ((uint8_t **) (pages[i].start_of_page + (pages[i].size_of_class * j)) <= adr &&
+                                (uint8_t **) (pages[i].start_of_page + ((pages[i].size_of_class * (j + 1)) - 1)) >= adr) {
+                                mem_free(adr);
+                                void* new_adr = mem_alloc(size);
+                                if (new_adr != NULL){ return new_adr; }
+                                else {
+                                    pages[i].size_of_class = block_size;
+                                    pages[i].list_of_using[j] = 1;
+                                    return NULL;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Allocator::mem_free(void *adr) {
@@ -175,11 +208,14 @@ int main() {
     void * adr4 = allocator.mem_alloc(11);
     void * adr5 = allocator.mem_alloc(69);
     void * adr6 = allocator.mem_alloc(259);
-    allocator.mem_free(adr6);
+//    allocator.mem_free(adr6);
 //    allocator.mem_free(adr4);
-    allocator.mem_free(adr3);
-    allocator.mem_free(adr2);
-    allocator.mem_free(adr1);
+//    allocator.mem_free(adr3);
+//    allocator.mem_free(adr2);
+//    allocator.mem_free(adr1);
+
+
+allocator.mem_realloc(adr3, 79);
     allocator.mem_dump();
     return 0;
 }
